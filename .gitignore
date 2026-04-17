@@ -1,0 +1,76 @@
+# Build results
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]uild/
+[Ll]og/
+
+# .NET test results
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+!packages/build/
+*.nuget.props
+*.nuget.targets
+
+# Rider / ReSharper
+*.sln.iml
+*.DotSettings.user
+_ReSharper*/
+*.ReSharper
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# VS Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# User-specific files
+*.swp
+*.tmp
+*.bak
+*.orig
+*.pid
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+logs/
+
+# Environment and secrets
+.env
+.env.*
+appsettings.Development.json
+secrets.json
+*.pfx
+*.snk
+
+# Node / frontend artifacts (if any)
+node_modules/
+dist/
+coverage/
+

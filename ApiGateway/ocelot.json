@@ -1,0 +1,38 @@
+{
+  "Routes": [
+    // ==================== Catalog Service ====================
+    {
+      "DownstreamPathTemplate": "/{everything}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7240 // Port của CatalogService.WebApi
+        }
+      ],
+      "UpstreamPathTemplate": "/catalog/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "SwaggerKey": "catalog"
+    },
+
+    // ==================== Order Service ====================
+    {
+      "DownstreamPathTemplate": "/{everything}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7002 // Port của OrderService.WebApi
+        }
+      ],
+      "UpstreamPathTemplate": "/order/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "SwaggerKey": "order"
+    }
+  ],
+
+  "GlobalConfiguration": {
+    "BaseUrl": "https://localhost:5000", // Port của Gateway (thay đổi nếu cần)
+    "RequestIdKey": "X-Request-Id" // Để trace request
+  }
+}

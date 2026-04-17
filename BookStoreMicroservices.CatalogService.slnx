@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/Authentication/">
+    <Project Path="Authen.Appication/Authen.Application.csproj" />
+    <Project Path="Authen.Domain/Authen.Domain.csproj" />
+    <Project Path="Authen.Infrastructure/Authen.Infrastructure.csproj" />
+    <Project Path="AuthenService.WebApi/AuthenService.WebApi.csproj" />
+  </Folder>
+  <Folder Name="/Catalog/">
+    <Project Path="CatalogService.Application/CatalogService.Application.csproj" />
+    <Project Path="CatalogService.Domain/CatalogService.Domain.csproj" />
+    <Project Path="CatalogService.Infrastructure/CatalogService.Infrastructure.csproj" />
+    <Project Path="CatalogService.WebApi/CatalogService.WebApi.csproj" />
+  </Folder>
+  <Project Path="ApiGateway/ApiGateway.csproj" />
+</Solution>
