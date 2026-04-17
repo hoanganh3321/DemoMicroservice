@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace Authen.Infrastructure.DatabaseConfig
 {
 
-    public class AuthenDBContext(DbContextOptions<AuthenDBContext> options) : IdentityDbContext<IdentityUser, IdentityRole, string>(options)
+    public class AuthenDBContext(DbContextOptions<AuthenDBContext> options) : IdentityDbContext<User, IdentityRole, string>(options)
     {
 
         protected override void OnModelCreating(ModelBuilder builder)

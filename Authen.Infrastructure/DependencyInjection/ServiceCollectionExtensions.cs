@@ -1,6 +1,7 @@
 ﻿using Authen.Infrastructure.Constant;
 using Authen.Infrastructure.DatabaseConfig;
 using Authen.Infrastructure.Identity;
+using Authen.Infrastructure.Mappings;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -26,7 +27,9 @@ namespace Authen.Infrastructure.DependencyInjection
             services.AddRepositories();
 
             // 4. AutoMapper
-            services.AddAutoMapper(typeof(Authen.Application.Common.AssemblyReference).Assembly);
+            services.AddAutoMapper(
+                typeof(Authen.Application.Common.AssemblyReference).Assembly,
+                typeof(UserMappingProfile).Assembly);
 
             // 5. MediatR 
             services.AddMediatR(config =>

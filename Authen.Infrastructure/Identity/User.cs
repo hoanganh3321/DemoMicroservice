@@ -35,6 +35,9 @@ namespace Authen.Infrastructure.Identity
         public User()
         {
             UserStatus = UserStatus.Active;
+
+            CreatedAt = DateTime.UtcNow;
+            IsDeleted = false;
         }
     }
 }
