@@ -1,8 +1,10 @@
-﻿using Authen.Infrastructure.Constant;
+﻿
+using Authen.Application.EventBus;
 using Authen.Infrastructure.DatabaseConfig;
+using Authen.Infrastructure.EventBus;
 using Authen.Infrastructure.Identity;
 using Authen.Infrastructure.Mappings;
-using Microsoft.AspNetCore.Builder;
+using MassTransit;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -25,7 +27,7 @@ namespace Authen.Infrastructure.DependencyInjection
 
             // 3. Tự động register tất cả Repository bằng Scrutor
             services.AddRepositories();
-
+            
             // 4. AutoMapper
             services.AddAutoMapper(
                 typeof(Authen.Application.Common.AssemblyReference).Assembly,
@@ -38,6 +40,19 @@ namespace Authen.Infrastructure.DependencyInjection
                     typeof(Authen.Application.Common.AssemblyReference).Assembly);
             });
 
+            // MassTransit + RabbitMQ
+            services.AddMassTransit(x =>
+            {
+                x.UsingRabbitMq((ctx, cfg) =>
+                {
+                    cfg.Host(configuration["RabbitMQ:Host"], h =>
+                    {
+                        h.Username(configuration["RabbitMQ:Username"]);
+                        h.Password(configuration["RabbitMQ:Password"]);
+                    });
+                });
+            });
+            services.AddScoped<IEventBus, MassTransitEventBus>();
 
             return services;
         }
@@ -94,6 +109,8 @@ namespace Authen.Infrastructure.DependencyInjection
 
             return services;
         }
+
+
     }
 }
 
