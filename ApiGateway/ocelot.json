@@ -1,49 +1,43 @@
 {
   "Routes": [
-    // ==================== Catalog Service ====================
     {
       "DownstreamPathTemplate": "/{everything}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7240 // Port của CatalogService.WebApi
+          "Host": "catalog",
+          "Port": 80
         }
       ],
       "UpstreamPathTemplate": "/catalog/{everything}",
-      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
-      "SwaggerKey": "catalog"
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
     },
-
-    // ==================== Order Service ====================
     {
       "DownstreamPathTemplate": "/{everything}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7002 // Port của OrderService.WebApi
+          "Host": "order",
+          "Port": 80
         }
       ],
       "UpstreamPathTemplate": "/order/{everything}",
-      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
-      "SwaggerKey": "order"
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
     },
-
-    // ==================== Authen Service ====================
     {
       "DownstreamPathTemplate": "/api/auth/{everything}",
-      "DownstreamScheme": "https",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
-        { "Host": "localhost", "Port": 7030 }
+        {
+          "Host": "authen",
+          "Port": 80
+        }
       ],
       "UpstreamPathTemplate": "/auth/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
     }
   ],
-
   "GlobalConfiguration": {
-    "BaseUrl": "https://localhost:7206", // Port của Gateway 
-    "RequestIdKey": "X-Request-Id" // Để trace request
+    "BaseUrl": "http://gateway"
   }
 }

@@ -21,6 +21,7 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddOcelot(builder.Configuration);
 
 var app = builder.Build();
+var isRunningInContainer = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -29,7 +30,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+if (!isRunningInContainer)
+{
+    app.UseHttpsRedirection();
+}
 
 var summaries = new[]
 {

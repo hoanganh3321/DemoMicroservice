@@ -1,23 +1,71 @@
-# docker-compose.yml
-version: '3.8'
-
 services:
+  gateway:
+    build:
+      context: .
+      dockerfile: ApiGateway/Dockerfile
+    container_name: gateway
+    ports:
+      - "7206:80"
+    depends_on:
+      - authen
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:80
+
+  authen:
+    build:
+      context: .
+      dockerfile: AuthenService.WebApi/Dockerfile
+    container_name: authen
+    ports:
+      - "7030:80"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:80
+      ConnectionStrings__DB: Server=sqlserver,1433;Database=AuthenTest;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=true;Encrypt=False;
+      RabbitMq__Host: rabbitmq
+      RabbitMq__Username: guest
+      RabbitMq__Password: guest
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver
+    ports:
+      - "1433:1433"
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "YourStrong@Passw0rd"
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -Q \"SELECT 1\" || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 20s
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq
     ports:
-      - "5672:5672"       # AMQP port ứng dụng kết nối vào đây
-      - "15672:15672"     # Management UI mở trên browser
+      - "5672:5672"
+      - "15672:15672"
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
     volumes:
-      - rabbitmq_data:/var/lib/rabbitmq  # giữ data khi restart
+      - rabbitmq_data:/var/lib/rabbitmq
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "ping"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
 
 volumes:
   rabbitmq_data:
+  sqlserver_data:

@@ -15,6 +15,7 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 app.UseMiddleware<GlobalExceptionMiddleware>();
+var isRunningInContainer = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -22,7 +23,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+if (!isRunningInContainer)
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseAuthorization();
 
