@@ -16,7 +16,8 @@ namespace Authen.Infrastructure.Mappings
             CreateMap<CreateUserModel, User>()
                 .ForMember(dest => dest.UserName,
                     opt => opt.MapFrom(src => src.Email))
-                .ForMember(dest => dest.Id, opt => opt.Ignore());
+             .ForMember(dest => dest.SecurityStamp,  
+                opt => opt.MapFrom(_ => Guid.NewGuid().ToString()));
         }
     }
 }

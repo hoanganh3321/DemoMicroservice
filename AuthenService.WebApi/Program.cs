@@ -27,7 +27,6 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app = await app.MigrateDatabase();
-
 app.MapControllers();
 
 app.Run();

@@ -19,7 +19,11 @@ namespace Authen.Infrastructure.DatabaseConfig
             base.OnModelCreating(builder);
 
             builder.ApplyConfigurationsFromAssembly(typeof(AuthenDBContext).Assembly);
-
+            builder.Entity<IdentityUserRole<string>>().ToTable("UserRoles");
+            builder.Entity<IdentityUserClaim<string>>().ToTable("UserClaims");
+            builder.Entity<IdentityUserLogin<string>>().ToTable("UserLogins");
+            builder.Entity<IdentityUserToken<string>>().ToTable("UserTokens");
+            builder.Entity<IdentityRoleClaim<string>>().ToTable("RoleClaims");
             builder.Entity<User>(entity =>
             {
                 entity.ToTable("Users");

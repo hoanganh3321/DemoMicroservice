@@ -1,4 +1,5 @@
 ﻿using Authen.Domain.Enum;
+using Authen.Infrastructure.Constant;
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
@@ -34,8 +35,9 @@ namespace Authen.Infrastructure.Identity
         // Constructor
         public User()
         {
+            Id = Guid.NewGuid().ToString();
+            SecurityStamp = Guid.NewGuid().ToString();
             UserStatus = UserStatus.Active;
-
             CreatedAt = DateTime.UtcNow;
             IsDeleted = false;
         }

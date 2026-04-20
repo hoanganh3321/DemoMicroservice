@@ -4,7 +4,7 @@ namespace Authen.Infrastructure.EventBus
 {
     /// <summary>
     /// Temporary event bus implementation to satisfy DI.
-    /// Replace with a real message broker publisher (e.g. MassTransit/RabbitMQ).
+    /// Replace with a real message broker publisher 
     /// </summary>
     public class MassTransitEventBus : IEventBus
     {

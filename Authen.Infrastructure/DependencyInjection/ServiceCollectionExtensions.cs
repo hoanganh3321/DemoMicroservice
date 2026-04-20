@@ -30,8 +30,8 @@ namespace Authen.Infrastructure.DependencyInjection
             
             // 4. AutoMapper
             services.AddAutoMapper(
-                typeof(Authen.Application.Common.AssemblyReference).Assembly,
-                typeof(UserMappingProfile).Assembly);
+                typeof(Authen.Application.Common.AssemblyReference),
+                typeof(UserMappingProfile));
 
             // 5. MediatR 
             services.AddMediatR(config =>

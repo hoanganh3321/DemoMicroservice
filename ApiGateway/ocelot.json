@@ -28,11 +28,22 @@
       "UpstreamPathTemplate": "/order/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
       "SwaggerKey": "order"
+    },
+
+    // ==================== Authen Service ====================
+    {
+      "DownstreamPathTemplate": "/api/auth/{everything}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        { "Host": "localhost", "Port": 7030 }
+      ],
+      "UpstreamPathTemplate": "/auth/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
     }
   ],
 
   "GlobalConfiguration": {
-    "BaseUrl": "https://localhost:5000", // Port của Gateway (thay đổi nếu cần)
+    "BaseUrl": "https://localhost:7206", // Port của Gateway 
     "RequestIdKey": "X-Request-Id" // Để trace request
   }
 }

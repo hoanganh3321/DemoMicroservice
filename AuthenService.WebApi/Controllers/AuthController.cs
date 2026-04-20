@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AuthenService.WebApi.Controllers
 {
+    [ApiController]
+    [Route("api/[controller]")]
     public class AuthController : BaseController
     {
         private readonly IMediator _mediator;

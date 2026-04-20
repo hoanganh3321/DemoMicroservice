@@ -1,5 +1,6 @@
-using Authen.Application.Interface;
+﻿using Authen.Application.Interface;
 using Authen.Application.Models.User;
+using Authen.Infrastructure.Constant;
 using Authen.Infrastructure.Identity;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
@@ -17,17 +18,26 @@ namespace Authen.Infrastructure.Implement
             _mapper = mapper;
         }
 
-        public async Task<IdentityUserCreatedResult> CreateUserAsync(
-            CreateUserModel createUserModel,
-            CancellationToken cancellationToken = default)
+        public async Task<IdentityUserCreatedResult> CreateUserAsync(CreateUserModel createUserModel,
+    CancellationToken cancellationToken = default)
         {
             var user = _mapper.Map<User>(createUserModel);
+            var createResult = await _userManager.CreateAsync(user, createUserModel.Password);
 
-            var result = await _userManager.CreateAsync(user, createUserModel.Password);
-            if (!result.Succeeded)
+            if (!createResult.Succeeded)
             {
-                var errors = string.Join("; ", result.Errors.Select(e => e.Description));
+                var errors = string.Join("; ", createResult.Errors.Select(e => e.Description));
                 throw new InvalidOperationException($"Create user failed: {errors}");
+            }
+
+            var roleResult = await _userManager.AddToRoleAsync(user, UserRoles.CUSTOMER);
+            if (!roleResult.Succeeded)
+            {
+              
+                await _userManager.DeleteAsync(user);
+
+                var errors = string.Join("; ", roleResult.Errors.Select(e => e.Description));
+                throw new InvalidOperationException($"Assign role failed: {errors}");
             }
 
             return new IdentityUserCreatedResult(user.Id, user.Email ?? createUserModel.Email);
