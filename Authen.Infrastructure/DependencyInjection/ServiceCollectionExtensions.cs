@@ -1,9 +1,11 @@
 ﻿
 using Authen.Application.EventBus;
+using Authen.Application.Interface;
 using Authen.Infrastructure.Constant;
 using Authen.Infrastructure.DatabaseConfig;
 using Authen.Infrastructure.EventBus;
 using Authen.Infrastructure.Identity;
+using Authen.Infrastructure.Implement;
 using Authen.Infrastructure.Mappings;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -31,7 +33,7 @@ namespace Authen.Infrastructure.DependencyInjection
             services.AddJwtConfig(configuration);
 
             // 3. Tự động register tất cả Repository bằng Scrutor
-            services.AddRepositories();
+            services.AddRepositories();           
             
             // 4. AutoMapper
             services.AddAutoMapper(

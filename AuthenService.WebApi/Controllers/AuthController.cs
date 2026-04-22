@@ -11,6 +11,7 @@ using System.Security.Claims;
 
 namespace AuthenService.WebApi.Controllers
 {
+    
     [ApiController]
     [Route("api/[controller]")]
     public class AuthController : BaseController

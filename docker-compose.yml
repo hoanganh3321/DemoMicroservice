@@ -9,7 +9,7 @@ services:
     depends_on:
       - authen
     environment:
-      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://+:80
 
   authen:
@@ -25,12 +25,12 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
-      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://+:80
-      ConnectionStrings__DB: Server=sqlserver,1433;Database=AuthenTest;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=true;Encrypt=False;
+      ConnectionStrings__DB: Server=sqlserver,1433;Database=AuthenTest;User Id=sa;Password=${DB_PASSWORD};TrustServerCertificate=true;Encrypt=False;
       RabbitMq__Host: rabbitmq
       RabbitMq__Username: guest
-      RabbitMq__Password: guest
+      RabbitMq__Password: ${RABBITMQ_PASSWORD}
 
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
@@ -39,7 +39,7 @@ services:
       - "1433:1433"
     environment:
       ACCEPT_EULA: "Y"
-      MSSQL_SA_PASSWORD: "YourStrong@Passw0rd"
+      MSSQL_SA_PASSWORD: ${DB_PASSWORD}
     healthcheck:
       test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -Q \"SELECT 1\" || exit 1"]
       interval: 10s
@@ -57,7 +57,7 @@ services:
       - "15672:15672"
     environment:
       RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     healthcheck:

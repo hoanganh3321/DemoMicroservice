@@ -6,12 +6,6 @@ using Authen.Infrastructure.Identity;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace Authen.Infrastructure.Implement
 {
@@ -20,15 +14,13 @@ namespace Authen.Infrastructure.Implement
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
         private readonly IMapper _mapper;
-        private readonly IOptions<JwtConfig> _jwtConfig;
-        private readonly IUserRepository _userRepository;
-        public IdentityRepository(UserManager<User> userManager, SignInManager<User> signInManager, IMapper mapper, IOptions<JwtConfig> jwtConfig, IUserRepository userRepository)
+        private readonly ITokenRepository _tokenService;
+        public IdentityRepository(UserManager<User> userManager, SignInManager<User> signInManager, IMapper mapper, ITokenRepository tokenService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _mapper = mapper;
-            _jwtConfig = jwtConfig;
-            _userRepository = userRepository;
+            _tokenService = tokenService;
         }
 
         public async Task<IdentityUserCreatedResult> CreateUserAsync(CreateUserModel createUserModel,
@@ -77,24 +69,29 @@ namespace Authen.Infrastructure.Implement
 
             account = await LoadAccountProfileAsync(account!, roles);
 
-            var claims = CreateClaimForAccessToken(account, roles);
-            var accessToken = GenerateToken(claims);
-            var refreshToken = GenerateRefreshToken();
+            var accessToken = _tokenService.GenerateAccessToken(
+                account.Id,
+                account.UserName ?? string.Empty,
+                account.Email ?? string.Empty,
+                roles,
+                account.CustomerProfile?.Id,
+                account.StaffProfile?.Id);
+            var refreshToken = _tokenService.GenerateRefreshToken();
 
-            account!.RefreshToken = HashRefreshToken(refreshToken);
+            account!.RefreshToken = _tokenService.HashRefreshToken(refreshToken);
             account.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(10);
             await _userManager.UpdateAsync(account);
 
             return IdentityUserLoginResult.Success(
                 accessToken,
                 refreshToken,
-                _jwtConfig.Value.ExpireInMinutes,
+                _tokenService.GetAccessTokenExpiryMinutes(),
                 roles.ToList());
         }
 
         public async Task<IdentityUserLoginResult> RefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default)
         {
-            var hashedRefreshToken = HashRefreshToken(refreshToken);
+            var hashedRefreshToken = _tokenService.HashRefreshToken(refreshToken);
             var account = await _userManager.Users.FirstOrDefaultAsync(u => u.RefreshToken == hashedRefreshToken, cancellationToken);
             if (account == null || account.RefreshTokenExpiryTime == null || account.RefreshTokenExpiryTime <= DateTime.UtcNow)
                 return IdentityUserLoginResult.Failure("Refresh token không hợp lệ hoặc đã hết hạn.");
@@ -104,18 +101,23 @@ namespace Authen.Infrastructure.Implement
                 return IdentityUserLoginResult.Failure("Người dùng không có quyền truy cập.");
 
             account = await LoadAccountProfileAsync(account, roles);
-            var claims = CreateClaimForAccessToken(account, roles);
-            var newAccessToken = GenerateToken(claims);
-            var newRefreshToken = GenerateRefreshToken();
+            var newAccessToken = _tokenService.GenerateAccessToken(
+                account.Id,
+                account.UserName ?? string.Empty,
+                account.Email ?? string.Empty,
+                roles,
+                account.CustomerProfile?.Id,
+                account.StaffProfile?.Id);
+            var newRefreshToken = _tokenService.GenerateRefreshToken();
 
-            account.RefreshToken = HashRefreshToken(newRefreshToken);
+            account.RefreshToken = _tokenService.HashRefreshToken(newRefreshToken);
             account.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(10);
             await _userManager.UpdateAsync(account);
 
             return IdentityUserLoginResult.Success(
                 newAccessToken,
                 newRefreshToken,
-                _jwtConfig.Value.ExpireInMinutes,
+                _tokenService.GetAccessTokenExpiryMinutes(),
                 roles.ToList());
         }
 
@@ -129,77 +131,6 @@ namespace Authen.Infrastructure.Implement
             account.RefreshTokenExpiryTime = null;
             var updateResult = await _userManager.UpdateAsync(account);
             return updateResult.Succeeded;
-        }
-
-        private List<Claim> CreateClaimForAccessToken(User user, IList<string> roles)
-        {
-            if (string.IsNullOrWhiteSpace(user.UserName) || string.IsNullOrWhiteSpace(user.Email))
-                throw new InvalidOperationException("UserName hoặc Email không hợp lệ để tạo access token.");
-
-            var authClaims = new List<Claim>()
-            {
-                new(ClaimTypes.Name, user.UserName),
-                new(ClaimTypes.NameIdentifier, user.Id),
-                new(ClaimTypes.Email, user.Email), // de dung cho .net
-                //new(JwtRegisteredClaimNames.Email, user.Email), // de dung cho frontend
-                new(JwtRegisteredClaimNames.Sub, user.Id), // dung sub phai cau hinh them gi do de dung cho frontend
-                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), // JWT ID
-            };
-
-            if (user.CustomerProfile != null)
-            {
-                authClaims.Add(new Claim("customer_id", user.CustomerProfile.Id.ToString()));
-            }
-
-            if (user.StaffProfile != null)
-            {
-                authClaims.Add(new Claim("staff_id", user.StaffProfile.Id.ToString()));
-            }
-
-            foreach (var role in roles)
-            {
-                authClaims.Add(new(ClaimTypes.Role, role));
-            }
-
-            return authClaims;
-        }
-
-        private string GenerateToken(IEnumerable<Claim> authClaims)
-        {
-            if (string.IsNullOrWhiteSpace(_jwtConfig.Value.SecretKey))
-                throw new InvalidOperationException("JWT SecretKey chưa được cấu hình.");
-
-            var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfig.Value.SecretKey));
-
-            var token = new JwtSecurityToken(
-                issuer: _jwtConfig.Value.Issuer,
-                audience: _jwtConfig.Value.Audience,
-                expires: DateTime.Now.AddMinutes(_jwtConfig.Value.ExpireInMinutes),
-                claims: authClaims,
-                signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256));
-
-            var jwtToken = new JwtSecurityTokenHandler().WriteToken(token);
-
-            return jwtToken;
-        }
-
-        private string GenerateRefreshToken()
-        {
-            var randomNumber = new byte[64];
-
-            using var rng = RandomNumberGenerator.Create();
-
-            rng.GetBytes(randomNumber);
-
-            return Convert.ToBase64String(randomNumber);
-
-            // rng la 1 object
-            // rng.GetBytes(randomNumber);
-            // tao ra 1 byte roi insert vao randomNumber cho day mang
-            // 1 byte la 8 bit day nhi phan 0 1
-            // Convert.ToBase64String(randomNumber)
-            // sau do chuyen cac byte thanh chuoi base64
-            // vd "z5FNRt5T8BgMErkYkY8k/hv63M0+0UXrJxN4VtQO5iPjoxYtC4JccIhC5g=="
         }
 
         private async Task<User> FindAccountAsync(string email)
@@ -250,10 +181,5 @@ namespace Authen.Infrastructure.Implement
             return await _userManager.GetRolesAsync(user);
         }
 
-        private static string HashRefreshToken(string refreshToken)
-        {
-            var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(refreshToken));
-            return Convert.ToHexString(bytes);
-        }
     }
 }
