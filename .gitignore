@@ -74,3 +74,4 @@ node_modules/
 dist/
 coverage/
 
+"AuthenService.WebApi/appsettings.json" 
