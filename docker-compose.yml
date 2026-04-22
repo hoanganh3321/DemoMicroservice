@@ -27,10 +27,15 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://+:80
-      ConnectionStrings__DB: Server=sqlserver,1433;Database=AuthenTest;User Id=sa;Password=12345;TrustServerCertificate=true;Encrypt=False;
+      ConnectionStrings__DB: Server=sqlserver,1433;Database=AuthenTest;User Id=sa;Password=dhasdhhqweasd!dhqehasdwqeyp123124;TrustServerCertificate=true;Encrypt=False;
       RabbitMq__Host: rabbitmq
       RabbitMq__Username: guest
       RabbitMq__Password: guest
+      
+      Jwt__SecretKey: "CHANGE_ME_TO_A_LONG_RANDOM_SECRET_KEY_AT_LEAST_32_CHARS"
+      Jwt__Issuer: "AuthenService"
+      Jwt__Audience: "BookStoreClients"
+      Jwt__ExpiryMinutes: "15"
 
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
@@ -39,7 +44,7 @@ services:
       - "1433:1433"
     environment:
       ACCEPT_EULA: "Y"
-      MSSQL_SA_PASSWORD: "12345"
+      MSSQL_SA_PASSWORD: "dhasdhhqweasd!dhqehasdwqeyp123124"
     healthcheck:
       test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -Q \"SELECT 1\" || exit 1"]
       interval: 10s
