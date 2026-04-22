@@ -9,6 +9,6 @@ using System.Threading.Tasks;
 
 namespace Authen.Application.Command
 {
-    public record LoginUserCommand(LoginUserModel LoginUserModel) : IRequest<ServiceResult<string>>;
+    public record LoginUserCommand(LoginUserModel LoginUserModel) : IRequest<ServiceResult<LoginResponseModel>>;
 }
 

@@ -1,4 +1,5 @@
-﻿using Authen.Domain.Enum;
+﻿using Authen.Domain.Entities;
+using Authen.Domain.Enum;
 using Authen.Infrastructure.Constant;
 using Microsoft.AspNetCore.Identity;
 using System;
@@ -31,7 +32,8 @@ namespace Authen.Infrastructure.Identity
         // Soft Delete
         public bool IsDeleted { get; set; } = false;
         public DateTime? DeletedAt { get; set; }
-
+        public virtual StaffProfile? StaffProfile { get; set; }
+        public virtual CustomerProfile? CustomerProfile { get; set; }
         // Constructor
         public User()
         {

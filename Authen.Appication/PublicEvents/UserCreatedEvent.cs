@@ -7,4 +7,5 @@ using System.Threading.Tasks;
 namespace Authen.Application.PublicEvents
 {
         public record UserCreatedEvent(string UserId, string Email);
+        public record UserLoginEvent( bool IsSuccess);
 }

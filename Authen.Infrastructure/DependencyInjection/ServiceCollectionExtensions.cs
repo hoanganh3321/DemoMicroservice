@@ -1,14 +1,18 @@
 ﻿
 using Authen.Application.EventBus;
+using Authen.Infrastructure.Constant;
 using Authen.Infrastructure.DatabaseConfig;
 using Authen.Infrastructure.EventBus;
 using Authen.Infrastructure.Identity;
 using Authen.Infrastructure.Mappings;
 using MassTransit;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 
 namespace Authen.Infrastructure.DependencyInjection
@@ -24,6 +28,7 @@ namespace Authen.Infrastructure.DependencyInjection
 
             // 2. Đăng ký Identity 
             services.AddIdentityConfig();
+            services.AddJwtConfig(configuration);
 
             // 3. Tự động register tất cả Repository bằng Scrutor
             services.AddRepositories();
@@ -45,10 +50,15 @@ namespace Authen.Infrastructure.DependencyInjection
             {
                 x.UsingRabbitMq((ctx, cfg) =>
                 {
+                    var rabbitUsername = configuration["RabbitMQ:Username"]
+                        ?? throw new InvalidOperationException("Thiếu cấu hình RabbitMQ:Username.");
+                    var rabbitPassword = configuration["RabbitMQ:Password"]
+                        ?? throw new InvalidOperationException("Thiếu cấu hình RabbitMQ:Password.");
+
                     cfg.Host(configuration["RabbitMQ:Host"], h =>
                     {
-                        h.Username(configuration["RabbitMQ:Username"]);
-                        h.Password(configuration["RabbitMQ:Password"]);
+                        h.Username(rabbitUsername);
+                        h.Password(rabbitPassword);
                     });
                 });
             });
@@ -88,6 +98,38 @@ namespace Authen.Infrastructure.DependencyInjection
                   .AddEntityFrameworkStores<AuthenDBContext>()
                 .AddDefaultTokenProviders();
 
+            return services;
+        }
+
+        private static IServiceCollection AddJwtConfig(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.Configure<JwtConfig>(configuration.GetSection("Jwt"));
+            var jwt = configuration.GetSection("Jwt").Get<JwtConfig>()
+                ?? throw new InvalidOperationException("Thiếu cấu hình Jwt.");
+
+            if (string.IsNullOrWhiteSpace(jwt.SecretKey))
+                throw new InvalidOperationException("Thiếu Jwt:SecretKey.");
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidateLifetime = true,
+                    ValidIssuer = jwt.Issuer,
+                    ValidAudience = jwt.Audience,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.SecretKey)),
+                    ClockSkew = TimeSpan.Zero
+                };
+            });
+
+            services.AddAuthorization();
             return services;
         }
 

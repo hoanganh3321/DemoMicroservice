@@ -9,6 +9,7 @@ namespace AuthenService.WebApi.Mapping
         public AuthMappingProfile()
         {
             CreateMap<RequestCreateUserDTO, CreateUserModel>();
+            CreateMap<RequestLoginDTO, LoginUserModel>();
         }
     }
 }

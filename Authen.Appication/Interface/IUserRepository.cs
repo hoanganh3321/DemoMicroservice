@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Authen.Domain.Entities
+namespace Authen.Application.Interface
 {
-    public class FileName
+    public interface IUserRepository
     {
     }
 }
